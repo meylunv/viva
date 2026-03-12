@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мой планер дня</title>
+  <meta name="theme-color" content="#e9dccf" />
+  <style>
+    :root{
+      --bg:#f6efe8;
+      --card:#fffaf6;
+      --line:#e6d8ca;
+      --text:#3d3128;
+      --muted:#7a685b;
+      --accent:#b8845f;
+      --accent-2:#d9b89d;
+      --success:#6f9b6e;
+      --danger:#b85c5c;
+      --shadow:0 10px 30px rgba(84,60,40,.08);
+      --radius:20px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:linear-gradient(180deg,#f8f2ec 0%, #f2e7dc 100%);
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    .wrap{
+      width:min(1100px, 94vw);
+      margin:0 auto;
+      padding:20px 0 40px;
+    }
+
+    .topbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .title-box{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(28px, 4vw, 40px);
+      line-height:1;
+    }
+
+    .subtitle{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .date-box{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+
+    .card h2{
+      margin:0 0 14px;
+      font-size:22px;
+    }
+
+    .section-note{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:-8px;
+      margin-bottom:14px;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    input, button, select, textarea{
+      font:inherit;
+    }
+
+    input[type="text"],
+    input[type="time"],
+    input[type="date"],
+    textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background:white;
+      border-radius:14px;
+      padding:12px 14px;
+      color:var(--text);
+      outline:none;
+    }
+
+    textarea{
+      min-height:92px;
+      resize:vertical;
+    }
+
+    input:focus, textarea:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(184,132,95,.12);
+    }
+
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    button:hover{transform:translateY(-1px)}
+    button.primary{
+      background:var(--accent);
+      color:white;
+    }
+    button.secondary{
+      background:#efe2d7;
+      color:var(--text);
+    }
+    button.ghost{
+      background:transparent;
+      border:1px solid var(--line);
+      color:var(--muted);
+    }
+    button.danger{
+      background:#f5e1e1;
+      color:var(--danger);
+    }
+
+    .planner-form,
+    .habit-form,
+    .todo-form{
+      display:grid;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr auto;
+      gap:10px;
+    }
+
+    .row-2{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .item{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background:white;
+    }
+
+    .item-head{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+
+    .item-title{
+      font-weight:700;
+      word-break:break-word;
+    }
+
+    .item-sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:4px;
+      white-space:pre-wrap;
+    }
+
+    .small-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .tiny-btn{
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:13px;
+    }
+
+    .time-pill{
+      display:inline-block;
+      padding:6px 10px;
+      background:#f3e6db;
+      border-radius:999px;
+      font-size:13px;
+      color:#6d5648;
+      margin-bottom:8px;
+    }
+
+    .done{
+      opacity:.72;
+    }
+
+    .done .item-title{
+      text-decoration:line-through;
+    }
+
+    .habit-grid{
+      display:grid;
+      gap:10px;
+    }
+
+    .habit-item{
+      display:grid;
+      grid-template-columns:1fr auto auto;
+      gap:10px;
+      align-items:center;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:white;
+    }
+
+    .habit-left{
+      min-width:0;
+    }
+
+    .habit-streak{
+      color:var(--success);
+      font-size:13px;
+      margin-top:4px;
+    }
+
+    .habit-check{
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:#ecf5eb;
+      color:var(--success);
+      font-weight:700;
+    }
+
+    .habit-check.off{
+      background:#f3ece6;
+      color:var(--muted);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .stat{
+      background:white;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+    }
+
+    .stat .n{
+      font-size:24px;
+      font-weight:800;
+      margin-top:4px;
+    }
+
+    .empty{
+      color:var(--muted);
+      text-align:center;
+      padding:18px 10px;
+      border:1px dashed var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,.45);
+    }
+
+    .footer-tools{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .right-col{
+      display:grid;
+      gap:16px;
+      align-content:start;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:#f2e5da;
+      color:#6f5848;
+      border-radius:999px;
+      padding:7px 11px;
+      font-size:13px;
+    }
+
+    .today-line{
+      margin-top:8px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .note-card{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    @media (max-width: 860px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 560px){
+      .row,
+      .row-2{
+        grid-template-columns:1fr;
+      }
+
+      .stats{
+        grid-template-columns:1fr;
+      }
+
+      .habit-item{
+        grid-template-columns:1fr auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title-box">
+        <h1>Мой планер дня</h1>
+        <div class="subtitle">График дня, привычки и список дел в одном месте</div>
+      </div>
+
+      <div class="date-box">
+        <input type="date" id="currentDate" />
+        <button class="secondary" id="todayBtn">Сегодня</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="left-col">
+        <div class="card">
+          <h2>График дня</h2>
+          <div class="section-note">Добавляй дела по времени для выбранной даты</div>
+
+          <div class="stats">
+            <div class="stat">
+              <div>Событий</div>
+              <div class="n" id="plannerCount">0</div>
+            </div>
+            <div class="stat">
+              <div>Выполнено</div>
+              <div class="n" id="plannerDoneCount">0</div>
+            </div>
+            <div class="stat">
+              <div>Осталось</div>
+              <div class="n" id="plannerLeftCount">0</div>
+            </div>
+          </div>
+
+          <form class="planner-form" id="plannerForm">
+            <div class="row">
+              <input type="time" id="planTime" required />
+              <input type="text" id="planTitle" placeholder="Например: созвон, спорт, ужин" required />
+              <button class="primary" type="submit">Добавить</button>
+            </div>
+            <textarea id="planNote" placeholder="Комментарий, адрес, детали"></textarea>
+          </form>
+
+          <div class="list" id="plannerList"></div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="card">
+          <h2>Привычки</h2>
+          <div class="section-note">Отмечай выполнение привычек каждый день</div>
+
+          <form class="habit-form" id="habitForm">
+            <div class="row-2">
+              <input type="text" id="habitTitle" placeholder="Например: вода, зарядка, чтение" required />
+              <button class="primary" type="submit">Добавить</button>
+            </div>
+          </form>
+
+          <div class="habit-grid" id="habitList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Список дел</h2>
+          <div class="section-note">Общие задачи без времени</div>
+
+          <form class="todo-form" id="todoForm">
+            <div class="row-2">
+              <input type="text" id="todoTitle" placeholder="Например: оплатить, купить, написать" required />
+              <button class="primary" type="submit">Добавить</button>
+            </div>
+          </form>
+
+          <div class="list" id="todoList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Управление данными</h2>
+          <div class="note-card">
+            Всё хранится прямо в браузере на этом устройстве. Можно экспортировать данные в файл и потом импортировать обратно.
+          </div>
+          <div class="footer-tools">
+            <button class="secondary" id="exportBtn">Экспорт JSON</button>
+            <button class="secondary" id="importBtn">Импорт JSON</button>
+            <input class="hidden" type="file" id="importFile" accept=".json,application/json" />
+            <button class="danger" id="resetBtn">Очистить всё</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "dayPlannerApp_v1";
+
+    const state = loadState();
+
+    const els = {
+      currentDate: document.getElementById("currentDate"),
+      todayBtn: document.getElementById("todayBtn"),
+
+      plannerForm: document.getElementById("plannerForm"),
+      planTime: document.getElementById("planTime"),
+      planTitle: document.getElementById("planTitle"),
+      planNote: document.getElementById("planNote"),
+      plannerList: document.getElementById("plannerList"),
+
+      habitForm: document.getElementById("habitForm"),
+      habitTitle: document.getElementById("habitTitle"),
+      habitList: document.getElementById("habitList"),
+
+      todoForm: document.getElementById("todoForm"),
+      todoTitle: document.getElementById("todoTitle"),
+      todoList: document.getElementById("todoList"),
+
+      plannerCount: document.getElementById("plannerCount"),
+      plannerDoneCount: document.getElementById("plannerDoneCount"),
+      plannerLeftCount: document.getElementById("plannerLeftCount"),
+
+      exportBtn: document.getElementById("exportBtn"),
+      importBtn: document.getElementById("importBtn"),
+      importFile: document.getElementById("importFile"),
+      resetBtn: document.getElementById("resetBtn"),
+    };
+
+    init();
+
+    function init() {
+      const today = getToday();
+      if (!state.selectedDate) state.selectedDate = today;
+      els.currentDate.value = state.selectedDate;
+
+      els.todayBtn.addEventListener("click", () => {
+        state.selectedDate = getToday();
+        els.currentDate.value = state.selectedDate;
+        saveState();
+        renderAll();
+      });
+
+      els.currentDate.addEventListener("change", (e) => {
+        state.selectedDate = e.target.value;
+        saveState();
+        renderAll();
+      });
+
+      els.plannerForm.addEventListener("submit", addPlannerItem);
+      els.habitForm.addEventListener("submit", addHabit);
+      els.todoForm.addEventListener("submit", addTodo);
+
+      els.exportBtn.addEventListener("click", exportData);
+      els.importBtn.addEventListener("click", () => els.importFile.click());
+      els.importFile.addEventListener("change", importData);
+      els.resetBtn.addEventListener("click", resetData);
+
+      renderAll();
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          return {
+            selectedDate: getToday(),
+            planner: {},
+            habits: [],
+            todo: []
+          };
+        }
+        const parsed = JSON.parse(raw);
+        return {
+          selectedDate: parsed.selectedDate || getToday(),
+          planner: parsed.planner || {},
+          habits: parsed.habits || [],
+          todo: parsed.todo || []
+        };
+      } catch {
+        return {
+          selectedDate: getToday(),
+          planner: {},
+          habits: [],
+          todo: []
+        };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getToday() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function uid() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function addPlannerItem(e) {
+      e.preventDefault();
+
+      const date = state.selectedDate;
+      if (!state.planner[date]) state.planner[date] = [];
+
+      state.planner[date].push({
+        id: uid(),
+        time: els.planTime.value,
+        title: els.planTitle.value.trim(),
+        note: els.planNote.value.trim(),
+        done: false
+      });
+
+      state.planner[date].sort((a, b) => a.time.localeCompare(b.time));
+
+      els.plannerForm.reset();
+      saveState();
+      renderPlanner();
+    }
+
+    function togglePlannerItem(id) {
+      const list = state.planner[state.selectedDate] || [];
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+      item.done = !item.done;
+      saveState();
+      renderPlanner();
+    }
+
+    function deletePlannerItem(id) {
+      const list = state.planner[state.selectedDate] || [];
+      state.planner[state.selectedDate] = list.filter(x => x.id !== id);
+      saveState();
+      renderPlanner();
+    }
+
+    function addHabit(e) {
+      e.preventDefault();
+
+      state.habits.push({
+        id: uid(),
+        title: els.habitTitle.value.trim(),
+        checks: {}
+      });
+
+      els.habitForm.reset();
+      saveState();
+      renderHabits();
+    }
+
+    function toggleHabit(id) {
+      const habit = state.habits.find(h => h.id === id);
+      if (!habit) return;
+
+      if (habit.checks[state.selectedDate]) {
+        delete habit.checks[state.selectedDate];
+      } else {
+        habit.checks[state.selectedDate] = true;
+      }
+
+      saveState();
+      renderHabits();
+    }
+
+    function deleteHabit(id) {
+      state.habits = state.habits.filter(h => h.id !== id);
+      saveState();
+      renderHabits();
+    }
+
+    function addTodo(e) {
+      e.preventDefault();
+
+      state.todo.unshift({
+        id: uid(),
+        title: els.todoTitle.value.trim(),
+        done: false,
+        createdAt: new Date().toISOString()
+      });
+
+      els.todoForm.reset();
+      saveState();
+      renderTodo();
+    }
+
+    function toggleTodo(id) {
+      const item = state.todo.find(t => t.id === id);
+      if (!item) return;
+      item.done = !item.done;
+      saveState();
+      renderTodo();
+    }
+
+    function deleteTodo(id) {
+      state.todo = state.todo.filter(t => t.id !== id);
+      saveState();
+      renderTodo();
+    }
+
+    function getStreak(checksObj) {
+      let streak = 0;
+      const d = new Date(state.selectedDate + "T12:00:00");
+      while (true) {
+        const key = formatDate(d);
+        if (checksObj[key]) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    function formatDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function renderAll() {
+      renderPlanner();
+      renderHabits();
+      renderTodo();
+    }
+
+    function renderPlanner() {
+      const list = (state.planner[state.selectedDate] || []).slice().sort((a,b) => a.time.localeCompare(b.time));
+      els.plannerCount.textContent = list.length;
+      els.plannerDoneCount.textContent = list.filter(x => x.done).length;
+      els.plannerLeftCount.textContent = list.filter(x => !x.done).length;
+
+      if (!list.length) {
+        els.plannerList.innerHTML = `<div class="empty">На этот день пока ничего не запланировано</div>`;
+        return;
+      }
+
+      els.plannerList.innerHTML = list.map(item => `
+        <div class="item ${item.done ? 'done' : ''}">
+          <div class="item-head">
+            <div>
+              <div class="time-pill">${escapeHtml(item.time)}</div>
+              <div class="item-title">${escapeHtml(item.title)}</div>
+              ${item.note ? `<div class="item-sub">${escapeHtml(item.note)}</div>` : ``}
+            </div>
+            <div class="small-actions">
+              <button class="tiny-btn secondary" onclick="togglePlannerItem('${item.id}')">
+                ${item.done ? 'Вернуть' : 'Готово'}
+              </button>
+              <button class="tiny-btn danger" onclick="deletePlannerItem('${item.id}')">Удалить</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderHabits() {
+      if (!state.habits.length) {
+        els.habitList.innerHTML = `<div class="empty">Пока нет привычек. Добавь первую.</div>`;
+        return;
+      }
+
+      els.habitList.innerHTML = state.habits.map(habit => {
+        const checked = !!habit.checks[state.selectedDate];
+        const streak = getStreak(habit.checks);
+        return `
+          <div class="habit-item">
+            <div class="habit-left">
+              <div class="item-title">${escapeHtml(habit.title)}</div>
+              <div class="habit-streak">Серия дней подряд: ${streak}</div>
+            </div>
+            <button class="habit-check ${checked ? '' : 'off'}" onclick="toggleHabit('${habit.id}')">
+              ${checked ? '✓' : '○'}
+            </button>
+            <button class="tiny-btn danger" onclick="deleteHabit('${habit.id}')">Удалить</button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTodo() {
+      if (!state.todo.length) {
+        els.todoList.innerHTML = `<div class="empty">Список дел пуст</div>`;
+        return;
+      }
+
+      els.todoList.innerHTML = state.todo.map(item => `
+        <div class="item ${item.done ? 'done' : ''}">
+          <div class="item-head">
+            <div class="item-title">${escapeHtml(item.title)}</div>
+            <div class="small-actions">
+              <button class="tiny-btn secondary" onclick="toggleTodo('${item.id}')">
+                ${item.done ? 'Вернуть' : 'Готово'}
+              </button>
+              <button class="tiny-btn danger" onclick="deleteTodo('${item.id}')">Удалить</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function exportData() {
+      const data = JSON.stringify(state, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "planner-data.json";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+
+          state.selectedDate = imported.selectedDate || getToday();
+          state.planner = imported.planner || {};
+          state.habits = imported.habits || [];
+          state.todo = imported.todo || [];
+
+          els.currentDate.value = state.selectedDate;
+          saveState();
+          renderAll();
+          alert("Данные успешно импортированы");
+        } catch {
+          alert("Не удалось импортировать файл");
+        }
+      };
+      reader.readAsText(file);
+
+      event.target.value = "";
+    }
+
+    function resetData() {
+      const ok = confirm("Точно удалить все данные?");
+      if (!ok) return;
+
+      state.selectedDate = getToday();
+      state.planner = {};
+      state.habits = [];
+      state.todo = [];
+
+      els.currentDate.value = state.selectedDate;
+      saveState();
+      renderAll();
+    }
+
+    window.togglePlannerItem = togglePlannerItem;
+    window.deletePlannerItem = deletePlannerItem;
+    window.toggleHabit = toggleHabit;
+    window.deleteHabit = deleteHabit;
+    window.toggleTodo = toggleTodo;
+    window.deleteTodo = deleteTodo;
+  </script>
+</body>
+</html>
